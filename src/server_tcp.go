@@ -13,17 +13,18 @@ type ServerTCP struct {
 	exitChan         chan int
 	waitGroup        WaitGroupWrapper
 	pro Protocol
+	addr string
 }
 
-func NewServerTCP() *ServerTCP  {
-	return &ServerTCP{}
+func NewServerTCP(addr string) *ServerTCP  {
+	return &ServerTCP{addr:addr}
 }
 
 func (s *ServerTCP) Start(context *ServerContext) error {
 	s.ctx = context
 	s.pro = context.GetProtocol()
 	var err error
-	s.tcpListener, err = net.Listen("tcp", "0.0.0.0:6666")
+	s.tcpListener, err = net.Listen("tcp", s.addr)
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-module github.com/tgo-team/tgo-core
+module github.com/tgo-team/tgo
 
 go 1.12
 
