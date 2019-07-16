@@ -76,7 +76,7 @@ exit:
 
 func (s *ServerUnix) handleConn(cn net.Conn)  {
 
-	packet,err := s.pro.DecodePacket(NewDefaultConnContext(cn))
+	packet,err := s.pro.DecodePacket(cn)
 	if err!=nil {
 		fmt.Println("解码消息失败！-> ",err.Error())
 		return

@@ -2,6 +2,7 @@ package tgo
 
 import (
 	"bufio"
+	"io"
 	"net"
 	"os"
 )
@@ -24,9 +25,9 @@ type TestPro struct {
 }
 
 // 解码消息
-func (t *TestPro) DecodePacket(connContext ConnContext) (interface{},error) {
+func (t *TestPro) DecodePacket(conn io.Reader) (interface{},error) {
 	 testBytes := make([]byte,1024)
-	cn,err := bufio.NewReader(connContext.GetConn()).Read(testBytes)
+	cn,err := bufio.NewReader(conn).Read(testBytes)
 	if err!=nil {
 		return nil,err
 	}

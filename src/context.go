@@ -6,13 +6,13 @@ type Context interface {
 
 type DefaultContext struct {
 	packetCtx PacketContext
-	connCtx    ConnContext
+	conn    Conn
 }
 
-func NewDefaultContext(packetCtx PacketContext, connCtx ConnContext) *DefaultContext {
+func NewDefaultContext(packetCtx PacketContext, conn Conn) *DefaultContext {
 	return &DefaultContext{
 		packetCtx: packetCtx,
-		connCtx:    connCtx,
+		conn:    conn,
 	}
 }
 
