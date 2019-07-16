@@ -2,6 +2,8 @@ package tgo
 
 import (
 	"fmt"
+	"github.com/tgo-team/tgo/src/log"
+	"go.uber.org/zap"
 	"sync/atomic"
 )
 
@@ -50,7 +52,7 @@ func (t *TGO) Stop() {
 			panic(err)
 		}
 	}
-	fmt.Println("TGO stopped")
+	t.debug("退出")
 }
 
 // UseServer 指定server服务器
@@ -114,4 +116,12 @@ func (t *TGO) matchHandler(context Context)  {
 			})
 		}
 	}
+}
+
+func (t *TGO) debug(msg string, fields ...zap.Field) {
+	log.Debug(fmt.Sprintf("【TGO】%s", msg), fields...)
+}
+
+func (t *TGO) info(msg string, fields ...zap.Field) {
+	log.Info(fmt.Sprintf("【TGO】%s", msg), fields...)
 }
