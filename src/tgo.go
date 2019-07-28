@@ -12,7 +12,7 @@ type Handler func(ctx Context)
 type TGO struct {
 	opts        *Options // TGO启动参数
 	servers     []Server // server集合
-	acceptChan  chan Context
+	AcceptChan  chan Context
 	pro         Protocol
 	runExitChan chan int
 	handler     Handler
@@ -24,7 +24,7 @@ type TGO struct {
 
 func New(options *Options) *TGO {
 
-	return &TGO{opts: options, servers: make([]Server, 0), runExitChan: make(chan int, 0), acceptChan: make(chan Context, 1024)}
+	return &TGO{opts: options, servers: make([]Server, 0), runExitChan: make(chan int, 0), AcceptChan: make(chan Context, 1024)}
 }
 
 // Start 开始TGO
@@ -94,7 +94,7 @@ func (t *TGO) serverContext(svr Server) *ServerContext {
 func (t *TGO) msgLoop() {
 	for {
 		select {
-		case context := <-t.acceptChan:
+		case context := <-t.AcceptChan:
 			if t.handler != nil {
 				t.handlerWaitGroup.Wrap(func() {
 					t.handler(context)
@@ -112,7 +112,7 @@ func (t *TGO) matchHandler(context Context)  {
 		handler := t.router.MatchHandler(context)
 		if handler!=nil {
 			t.handlerWaitGroup.Wrap(func() {
-				t.handler(context)
+				 handler(context)
 			})
 		}
 	}

@@ -11,6 +11,7 @@ type Conn interface {
 	Close() error
 }
 
+
 type StatefulConn interface {
 	Read(b []byte) (n int, err error)
 	Write(b []byte) (n int, err error)

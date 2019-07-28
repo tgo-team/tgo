@@ -33,7 +33,7 @@ func NewServerUnix(fileName string) *ServerUnix {
 
 
 func (s *ServerUnix) Start(context *ServerContext) error {
-	s.pro = context.tg.pro
+	s.pro = context.T.pro
 	s.ctx = context
 	s.waitGroup.Wrap(s.connLoop)
 	return nil
@@ -81,5 +81,6 @@ func (s *ServerUnix) handleConn(cn net.Conn)  {
 		fmt.Println("解码消息失败！-> ",err.Error())
 		return
 	}
-	s.ctx.Accept(NewDefaultPacketContext(packet))
+	pCtx := NewDefaultPacketContext(packet)
+	s.ctx.Accept(NewDefaultContext(pCtx, cn,s.pro,nil))
 }

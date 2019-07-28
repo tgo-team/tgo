@@ -6,19 +6,19 @@ type Server interface {
 }
 
 type ServerContext struct {
-	tg *TGO
+	T *TGO
 	svr Server
 }
 
 func NewServerContext(tg *TGO,svr Server) *ServerContext {
-	return &ServerContext{tg: tg,svr:svr}
+	return &ServerContext{T: tg,svr:svr}
 }
 
 func (sc *ServerContext) Accept(ctx Context)  {
-	sc.tg.acceptChan <- ctx
+	sc.T.AcceptChan <- ctx
 }
 
 func (sc *ServerContext) GetProtocol() Protocol {
 
-	return sc.tg.pro
+	return sc.T.pro
 }
