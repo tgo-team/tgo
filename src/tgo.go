@@ -10,21 +10,22 @@ import (
 type Handler func(ctx Context)
 
 type TGO struct {
-	opts        *Options // TGO启动参数
-	servers     []Server // server集合
-	AcceptChan  chan Context
-	pro         Protocol
-	runExitChan chan int
-	handler     Handler
-	waitGroup   WaitGroupWrapper
-	router      Router
-	clientId  uint64
+	opts             *Options // TGO启动参数
+	servers          []Server // server集合
+	AcceptChan       chan Context
+	pro              Protocol
+	runExitChan      chan int
+	handler          Handler
+	waitGroup        WaitGroupWrapper
+	router           Router
+	clientId         uint64
 	handlerWaitGroup WaitGroupWrapper
+	ConnManager      ConnManager
 }
 
 func New(options *Options) *TGO {
 
-	return &TGO{opts: options, servers: make([]Server, 0), runExitChan: make(chan int, 0), AcceptChan: make(chan Context, 1024)}
+	return &TGO{opts: options, servers: make([]Server, 0), runExitChan: make(chan int, 0), AcceptChan: make(chan Context, 1024), ConnManager: NewDefaultConnManager()}
 }
 
 // Start 开始TGO
@@ -60,9 +61,10 @@ func (t *TGO) UseServer(server Server) {
 	t.servers = append(t.servers, server)
 }
 
-func (t *TGO) ClearServers()  {
-	t.servers = make([]Server,0)
+func (t *TGO) ClearServers() {
+	t.servers = make([]Server, 0)
 }
+
 // UseProtocol 指定协议
 func (t *TGO) UseProtocol(p Protocol) {
 	t.pro = p
@@ -83,8 +85,8 @@ func (t *TGO) GetProtocol() Protocol {
 }
 
 // GenClientId 生成客户端ID
-func (t *TGO) GenClientId() uint64  {
-	return  atomic.AddUint64(&t.clientId,1)
+func (t *TGO) GenClientId() uint64 {
+	return atomic.AddUint64(&t.clientId, 1)
 }
 
 func (t *TGO) serverContext(svr Server) *ServerContext {
@@ -107,12 +109,12 @@ func (t *TGO) msgLoop() {
 }
 
 // 匹配处理者
-func (t *TGO) matchHandler(context Context)  {
-	if t.router!=nil {
+func (t *TGO) matchHandler(context Context) {
+	if t.router != nil {
 		handler := t.router.MatchHandler(context)
-		if handler!=nil {
+		if handler != nil {
 			t.handlerWaitGroup.Wrap(func() {
-				 handler(context)
+				handler(context)
 			})
 		}
 	}

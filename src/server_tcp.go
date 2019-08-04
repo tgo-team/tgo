@@ -93,7 +93,7 @@ func (s *ServerTCP) handleConn(cn net.Conn) {
 			return
 		}
 	} else {
-		tgoConn = NewStatefulConn(cn, s.ctx.T.GenClientId(), nil)
+		tgoConn = NewStatefulConn(cn, fmt.Sprintf("%d",s.ctx.T.GenClientId()), nil)
 		packet, err = s.pro.DecodePacket(tgoConn)
 		if err != nil {
 			fmt.Println("解码消息失败！-> ", err.Error())
