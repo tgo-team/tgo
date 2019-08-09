@@ -8,3 +8,5 @@ func NewOptions() *Options {
 
 	return &Options{}
 }
+
+type Option func(*Options) error

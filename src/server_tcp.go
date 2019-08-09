@@ -22,7 +22,7 @@ type ServerTCP struct {
 }
 
 // 握手方法
-type HandshakeFnc func(conn net.Conn,sCtx *ServerContext, timeout time.Duration) (interface{}, Conn, error)
+type HandshakeFnc func(conn net.Conn,sCtx *ServerContext, timeout time.Duration) (interface{}, StatefulConn, error)
 
 func NewServerTCP(addr string, handshakeFnc HandshakeFnc) *ServerTCP {
 	return &ServerTCP{addr: addr, handshakeFnc: handshakeFnc, exitChan: make(chan int, 0)}
@@ -83,15 +83,17 @@ exit:
 func (s *ServerTCP) handleConn(cn net.Conn) {
 
 	var tgoConn Conn
+	var statefulConn StatefulConn
 	var packet interface{}
 	var err error
 	if s.handshakeFnc != nil {
-		packet, tgoConn, err = s.handshakeFnc(cn,s.ctx, 10*time.Second)
+		packet, statefulConn, err = s.handshakeFnc(cn,s.ctx, 10*time.Second)
 		if err != nil {
 			log.Debug("握手失败！", zap.Error(err))
 			cn.Close()
 			return
 		}
+		tgoConn = statefulConn
 	} else {
 		tgoConn = NewStatefulConn(cn, fmt.Sprintf("%d",s.ctx.T.GenClientId()), nil)
 		packet, err = s.pro.DecodePacket(tgoConn)
@@ -101,13 +103,13 @@ func (s *ServerTCP) handleConn(cn net.Conn) {
 			return
 		}
 	}
-	if tgoConn == nil {
+	if tgoConn == nil  {
 		log.Debug("握手失败！")
 		cn.Close()
 		return
 	}
 	pCtx := NewDefaultPacketContext(packet)
-	s.ctx.Accept(NewDefaultContext(pCtx,tgoConn,s.pro,nil ))
+	s.ctx.Accept(NewDefaultContext(pCtx,tgoConn,s.pro,statefulConn ))
 }
 
 func (s *ServerTCP) debug(msg string, fields ...zap.Field) {

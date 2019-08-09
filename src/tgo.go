@@ -10,7 +10,7 @@ import (
 type Handler func(ctx Context)
 
 type TGO struct {
-	opts             *Options // TGO启动参数
+	opts             Options // TGO启动参数
 	servers          []Server // server集合
 	AcceptChan       chan Context
 	pro              Protocol
@@ -22,10 +22,20 @@ type TGO struct {
 	handlerWaitGroup WaitGroupWrapper
 	ConnManager      ConnManager
 }
-
-func New(options *Options) *TGO {
-
-	return &TGO{opts: options, servers: make([]Server, 0), runExitChan: make(chan int, 0), AcceptChan: make(chan Context, 1024), ConnManager: NewDefaultConnManager()}
+func GetDefaultOptions() Options {
+	return Options{
+	}
+}
+func New(opts ...Option) *TGO {
+	defaultOpts := GetDefaultOptions()
+	for _, opt := range opts {
+		if opt != nil {
+			if err := opt(&defaultOpts); err != nil {
+				panic(err)
+			}
+		}
+	}
+	return &TGO{opts: defaultOpts, servers: make([]Server, 0), runExitChan: make(chan int, 0), AcceptChan: make(chan Context, 1024), ConnManager: NewDefaultConnManager()}
 }
 
 // Start 开始TGO

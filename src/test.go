@@ -11,7 +11,7 @@ func NewTestTGO() (*TGO,net.Addr) {
 	fileName := "test.socket"
 	os.Remove(fileName)
 	// 创建TGO
-	tg := New(NewOptions())
+	tg := New()
 	s := NewServerUnix(fileName)
 	// 指定server
 	tg.UseServer(s)
