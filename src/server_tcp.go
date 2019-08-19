@@ -7,25 +7,22 @@ import (
 	"net"
 	"runtime"
 	"strings"
-	"time"
 )
 
+type NewContextFnc func(packetCtx PacketContext,sContext *ServerContext, conn Conn, statefulConn StatefulConn) Context
 type ServerTCP struct {
-	tcpListener  net.Listener
-	ctx          *ServerContext
-	exitChan     chan int
-	waitGroup    WaitGroupWrapper
-	pro          Protocol
-	addr         string
-	RealAddr     string // 真实连接地址
-	handshakeFnc HandshakeFnc
+	tcpListener   net.Listener
+	ctx           *ServerContext
+	exitChan      chan int
+	waitGroup     WaitGroupWrapper
+	pro           Protocol
+	addr          string
+	RealAddr      string // 真实连接地址
+	newContextFnc NewContextFnc
 }
 
-// 握手方法
-type HandshakeFnc func(conn net.Conn,sCtx *ServerContext, timeout time.Duration) (interface{}, StatefulConn, error)
-
-func NewServerTCP(addr string, handshakeFnc HandshakeFnc) *ServerTCP {
-	return &ServerTCP{addr: addr, handshakeFnc: handshakeFnc, exitChan: make(chan int, 0)}
+func NewServerTCP(addr string, newContextFnc NewContextFnc) *ServerTCP {
+	return &ServerTCP{addr: addr, exitChan: make(chan int, 0), newContextFnc: newContextFnc}
 }
 
 func (s *ServerTCP) Start(context *ServerContext) error {
@@ -82,34 +79,46 @@ exit:
 
 func (s *ServerTCP) handleConn(cn net.Conn) {
 
-	var tgoConn Conn
-	var statefulConn StatefulConn
-	var packet interface{}
-	var err error
-	if s.handshakeFnc != nil {
-		packet, statefulConn, err = s.handshakeFnc(cn,s.ctx, 10*time.Second)
-		if err != nil {
-			log.Debug("握手失败！", zap.Error(err))
-			cn.Close()
-			return
-		}
-		tgoConn = statefulConn
-	} else {
-		tgoConn = NewStatefulConn(cn, fmt.Sprintf("%d",s.ctx.T.GenClientId()), nil)
-		packet, err = s.pro.DecodePacket(tgoConn)
-		if err != nil {
-			fmt.Println("解码消息失败！-> ", err.Error())
-			cn.Close()
-			return
-		}
-	}
-	if tgoConn == nil  {
-		log.Debug("握手失败！")
-		cn.Close()
+	//var tgoConn Conn
+	//var statefulConn StatefulConn
+	//var packet interface{}
+	//var err error
+	//if s.handshakeFnc != nil {
+	//	packet, statefulConn, err = s.handshakeFnc(cn,s.ctx, 10*time.Second)
+	//	if err != nil {
+	//		log.Debug("握手失败！", zap.Error(err))
+	//		cn.Close()
+	//		return
+	//	}
+	//	tgoConn = statefulConn
+	//} else {
+	//	tgoConn = NewStatefulConn(cn, fmt.Sprintf("%d",s.ctx.T.GenClientId()), nil)
+	//	packet, err = s.pro.DecodePacket(tgoConn)
+	//	if err != nil {
+	//		fmt.Println("解码消息失败！-> ", err.Error())
+	//		cn.Close()
+	//		return
+	//	}
+	//}
+	//if tgoConn == nil  {
+	//	log.Debug("握手失败！")
+	//	cn.Close()
+	//	return
+	//}
+	statefulConn := NewStatefulConn(cn, fmt.Sprintf("%d", s.ctx.T.GenClientId()), nil)
+	packet, err := s.pro.DecodePacket(cn)
+	if err != nil {
+		log.Error("解码连接消息失败！", zap.Error(err))
 		return
 	}
 	pCtx := NewDefaultPacketContext(packet)
-	s.ctx.Accept(NewDefaultContext(pCtx,tgoConn,s.pro,statefulConn ))
+	var context Context
+	if s.newContextFnc != nil {
+		context = s.newContextFnc(pCtx,s.ctx, statefulConn, statefulConn)
+	} else {
+		context = NewDefaultContext(pCtx, s.ctx, statefulConn, s.pro, statefulConn)
+	}
+	s.ctx.Accept(context)
 }
 
 func (s *ServerTCP) debug(msg string, fields ...zap.Field) {

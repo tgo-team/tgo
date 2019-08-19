@@ -82,5 +82,5 @@ func (s *ServerUnix) handleConn(cn net.Conn)  {
 		return
 	}
 	pCtx := NewDefaultPacketContext(packet)
-	s.ctx.Accept(NewDefaultContext(pCtx, cn,s.pro,nil))
+	s.ctx.Accept(NewDefaultContext(pCtx,s.ctx, cn,s.pro,nil))
 }

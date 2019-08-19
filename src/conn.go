@@ -50,6 +50,10 @@ func (c *DefaultStatefulConn) Close() error  {
 	return c.conn.Close()
 }
 
+func (c *DefaultStatefulConn) GetProps() map[string]interface{}{
+	return c.props
+}
+
 
 type ConnContext interface {
 	// GetConn 获取连接
