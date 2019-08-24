@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
@@ -60,4 +61,34 @@ func Error(msg string, fields ...zap.Field) {
 
 func Warn(msg string, fields ...zap.Field) {
 	logger.Warn(msg, fields...)
+}
+
+type Log interface {
+	Info(msg string, fields ...zap.Field)
+	Debug(msg string, fields ...zap.Field)
+	Error(msg string, fields ...zap.Field)
+	Warn(msg string, fields ...zap.Field)
+}
+
+type TLog struct {
+	prefix string // 日志前缀
+}
+
+func NewTLog(prefix string) *TLog {
+
+	return &TLog{prefix:prefix}
+}
+
+func (t *TLog) Info(msg string, fields ...zap.Field)  {
+	Info(fmt.Sprintf("【%s】%s",t.prefix,msg),fields...)
+}
+
+func (t *TLog) Debug(msg string, fields ...zap.Field)  {
+	Debug(fmt.Sprintf("【%s】%s",t.prefix,msg),fields...)
+}
+func (t *TLog) Error(msg string, fields ...zap.Field) {
+	Error(fmt.Sprintf("【%s】%s",t.prefix,msg),fields...)
+}
+func (t *TLog) Warn(msg string, fields ...zap.Field)  {
+	Warn(fmt.Sprintf("【%s】%s",t.prefix,msg),fields...)
 }
