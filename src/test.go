@@ -15,7 +15,6 @@ func NewTestTGO() (*TGO,net.Addr) {
 	s := NewServerUnix(fileName)
 	// 指定server
 	tg.UseServer(s)
-	tg.UseProtocol(&TestPro{})
 	return tg,s.addr
 }
 

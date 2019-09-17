@@ -12,7 +12,6 @@ type ServerUnix struct {
 	ctx         *ServerContext
 	exitChan         chan int
 	waitGroup        WaitGroupWrapper
-	pro Protocol
 	fileName string
 	addr *net.UnixAddr
 }
@@ -33,7 +32,6 @@ func NewServerUnix(fileName string) *ServerUnix {
 
 
 func (s *ServerUnix) Start(context *ServerContext) error {
-	s.pro = context.T.pro
 	s.ctx = context
 	s.waitGroup.Wrap(s.connLoop)
 	return nil
@@ -76,11 +74,21 @@ exit:
 
 func (s *ServerUnix) handleConn(cn net.Conn)  {
 
-	packet,err := s.pro.DecodePacket(cn)
+	packet,err := s.GetProtocol().DecodePacket(cn)
 	if err!=nil {
 		fmt.Println("解码消息失败！-> ",err.Error())
 		return
 	}
 	pCtx := NewDefaultPacketContext(packet)
-	s.ctx.Accept(NewDefaultContext(pCtx,s.ctx, cn,s.pro,nil))
+	s.ctx.Accept(NewDefaultContext(pCtx,s.ctx,s.GetProtocol(),nil))
+}
+
+
+func (s *ServerUnix) GetRouter() Router {
+	return nil
+}
+
+func (s *ServerUnix) GetProtocol() Protocol {
+
+	return nil
 }

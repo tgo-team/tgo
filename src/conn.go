@@ -1,7 +1,6 @@
 package tgo
 
 import (
-	"net"
 	"time"
 )
 
@@ -12,46 +11,12 @@ type Conn interface {
 }
 
 
-type StatefulConn interface {
+type Client interface {
 	Read(b []byte) (n int, err error)
 	Write(b []byte) (n int, err error)
 	SetDeadline(t time.Time)
-	GetId() string
+	GetId() uint64
 	Close() error
-	GetProps() map[string]interface{}
-}
-
-type DefaultStatefulConn struct {
-	conn net.Conn
-	clientId string
-	props map[string]interface{}
-}
-
-func NewStatefulConn(conn net.Conn,clientId string,props map[string]interface{}) *DefaultStatefulConn {
-	return &DefaultStatefulConn{conn: conn,clientId:clientId,props:props}
-}
-
-func (c *DefaultStatefulConn) Read(b []byte) (n int, err error) {
-	return c.conn.Read(b)
-}
-
-func (c *DefaultStatefulConn) Write(b []byte) (n int, err error) {
-	return c.conn.Write(b)
-}
-
-func (c *DefaultStatefulConn) SetDeadline(t time.Time)  {
-	c.conn.SetDeadline(t)
-}
-func (c *DefaultStatefulConn) GetId() string  {
-	return c.clientId
-}
-
-func (c *DefaultStatefulConn) Close() error  {
-	return c.conn.Close()
-}
-
-func (c *DefaultStatefulConn) GetProps() map[string]interface{}{
-	return c.props
 }
 
 

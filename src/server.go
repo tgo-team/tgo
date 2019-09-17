@@ -3,6 +3,8 @@ package tgo
 type Server interface {
 	Start(context *ServerContext) error
 	Stop() error
+	GetRouter() Router
+	GetProtocol() Protocol
 }
 
 type ServerContext struct {
@@ -20,5 +22,5 @@ func (sc *ServerContext) Accept(ctx Context)  {
 
 func (sc *ServerContext) GetProtocol() Protocol {
 
-	return sc.T.pro
+	return sc.svr.GetProtocol()
 }
