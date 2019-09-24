@@ -33,7 +33,6 @@ func (c *TCPClient) msgLoop()  {
 		}
 		pCtx := NewDefaultPacketContext(packet)
 		c.sCtx.Accept(NewDefaultContext(pCtx, c.sCtx, c.sCtx.GetProtocol(), c))
-
 	}
 }
 
@@ -57,4 +56,7 @@ func (c *TCPClient) Close() error  {
 	return c.Conn.Close()
 }
 
+func (c *TCPClient)  KeepAlive()  {
+
+}
 

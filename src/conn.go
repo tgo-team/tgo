@@ -17,6 +17,7 @@ type Client interface {
 	SetDeadline(t time.Time)
 	GetId() uint64
 	Close() error
+    KeepAlive()
 }
 
 
