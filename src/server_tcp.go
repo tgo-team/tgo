@@ -73,7 +73,7 @@ func TcpCreateClient(createClientFnc CreateClientFnc) TcpOption {
 }
 
 type NewContextFnc func(packetCtx PacketContext, sContext *ServerContext, conn Conn, client Client) Context
-type CreateClientFnc func(clientId uint64,packet interface{},conn net.Conn,sCtx *ServerContext) (Client,error)
+type CreateClientFnc func(clientId string,packet interface{},conn net.Conn,sCtx *ServerContext) (Client,error)
 type ServerTCP struct {
 	tcpListener net.Listener
 	ctx         *ServerContext
@@ -83,7 +83,7 @@ type ServerTCP struct {
 	opts        *TcpOptions
 }
 
-type HandshakeFnc func(packet interface{}, conn net.Conn,ctx *ServerContext) (error,uint64)
+type HandshakeFnc func(packet interface{}, conn net.Conn,ctx *ServerContext) (error,string)
 
 func NewServerTCP(opts ...TcpOption) *ServerTCP {
 	options := NewTcpOptions()
@@ -168,7 +168,7 @@ func (s *ServerTCP) handleConn(cn net.Conn) {
 		log.Error("解码连接消息失败！", zap.Error(err))
 		return
 	}
-	var clientId uint64
+	var clientId string
 	if s.opts.handshake!=nil {
 		err,clientId = s.opts.handshake(packet, cn,s.ctx)
 		if err!=nil {

@@ -8,16 +8,16 @@ type ClientManager interface {
 	// Remove 移除客户端
 	Remove(client Client)
 	// Get 获取客户端
-	Get(clientId uint64) Client
+	Get(clientId string) Client
 }
 
 type DefaultClientManager struct {
-	connMap map[uint64]Client
+	connMap map[string]Client
 	sync.RWMutex
 }
 
 func NewDefaultClientManager() *DefaultClientManager  {
-	return &DefaultClientManager{connMap: map[uint64]Client{}}
+	return &DefaultClientManager{connMap: map[string]Client{}}
 }
 
 func (d *DefaultClientManager) Add(client Client) {
@@ -33,7 +33,7 @@ func (d *DefaultClientManager) Remove(client Client) {
 	delete(d.connMap,client.GetId())
 }
 
-func (d *DefaultClientManager) Get(connId uint64) Client{
+func (d *DefaultClientManager) Get(connId string) Client{
 	d.RLock()
 	defer d.RUnlock()
 

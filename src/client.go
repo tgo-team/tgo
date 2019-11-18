@@ -8,12 +8,12 @@ import (
 )
 
 type TCPClient struct {
-	clientId uint64
+	clientId string
 	net.Conn
 	sCtx *ServerContext
 }
 
-func NewTCPClient(clientId uint64,conn net.Conn,sCtx *ServerContext) *TCPClient  {
+func NewTCPClient(clientId string,conn net.Conn,sCtx *ServerContext) *TCPClient  {
 	c := &TCPClient{}
 	c.clientId = clientId
 	c.Conn = conn
@@ -48,7 +48,10 @@ func (c *TCPClient) Write(b []byte) (n int, err error) {
 func (c *TCPClient) SetDeadline(t time.Time)  {
 	c.Conn.SetDeadline(t)
 }
-func (c *TCPClient) GetId() uint64  {
+func (c *TCPClient) GetId() string  {
+	return c.clientId
+}
+func (c *TCPClient) GetUid() string  {
 	return c.clientId
 }
 

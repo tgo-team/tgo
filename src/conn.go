@@ -15,7 +15,8 @@ type Client interface {
 	Read(b []byte) (n int, err error)
 	Write(b []byte) (n int, err error)
 	SetDeadline(t time.Time)
-	GetId() uint64
+	GetId() string
+	GetUid() string
 	Close() error
     KeepAlive()
 }
