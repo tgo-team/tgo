@@ -1,5 +1,10 @@
 package tgo
 
+import (
+	"github.com/tgo-team/tgo/src/log"
+	"go.uber.org/zap"
+)
+
 type Context interface {
 	// 获取包
 	GetPacket() interface{}
@@ -49,10 +54,10 @@ func (d *DefaultContext) GetClient() Client {
 func (d *DefaultContext) WritePacket(packet interface{}) {
 	packetBytes, err := d.pro.EncodePacket(packet)
 	if err != nil {
-		panic(err)
+		log.Warn("EncodePacket失败！",zap.Error(err))
 	}
 	_, err = d.GetClient().Write(packetBytes)
 	if err != nil {
-		panic(err)
+		log.Warn("Write失败！",zap.Error(err))
 	}
 }
