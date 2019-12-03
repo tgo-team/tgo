@@ -46,23 +46,28 @@ func timeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(t.Format("2006-01-02 15:04:05.000"))
 }
 
+// Info Info
 func Info(msg string, fields ...zap.Field) {
 	logger.Info(msg, fields...)
 }
 
+// Debug Debug
 func Debug(msg string, fields ...zap.Field) {
 	logger.Debug(msg, fields...)
 
 }
 
+// Error Error
 func Error(msg string, fields ...zap.Field) {
 	logger.Error(msg, fields...)
 }
 
+// Warn Warn
 func Warn(msg string, fields ...zap.Field) {
 	logger.Warn(msg, fields...)
 }
 
+// Log Log
 type Log interface {
 	Info(msg string, fields ...zap.Field)
 	Debug(msg string, fields ...zap.Field)
@@ -70,25 +75,33 @@ type Log interface {
 	Warn(msg string, fields ...zap.Field)
 }
 
+// TLog TLog
 type TLog struct {
 	prefix string // 日志前缀
 }
 
+// NewTLog NewTLog
 func NewTLog(prefix string) *TLog {
 
-	return &TLog{prefix:prefix}
+	return &TLog{prefix: prefix}
 }
 
-func (t *TLog) Info(msg string, fields ...zap.Field)  {
-	Info(fmt.Sprintf("【%s】%s",t.prefix,msg),fields...)
+// Info Info
+func (t *TLog) Info(msg string, fields ...zap.Field) {
+	Info(fmt.Sprintf("【%s】%s", t.prefix, msg), fields...)
 }
 
-func (t *TLog) Debug(msg string, fields ...zap.Field)  {
-	Debug(fmt.Sprintf("【%s】%s",t.prefix,msg),fields...)
+// Debug Debug
+func (t *TLog) Debug(msg string, fields ...zap.Field) {
+	Debug(fmt.Sprintf("【%s】%s", t.prefix, msg), fields...)
 }
+
+// Error Error
 func (t *TLog) Error(msg string, fields ...zap.Field) {
-	Error(fmt.Sprintf("【%s】%s",t.prefix,msg),fields...)
+	Error(fmt.Sprintf("【%s】%s", t.prefix, msg), fields...)
 }
-func (t *TLog) Warn(msg string, fields ...zap.Field)  {
-	Warn(fmt.Sprintf("【%s】%s",t.prefix,msg),fields...)
+
+// Warn Warn
+func (t *TLog) Warn(msg string, fields ...zap.Field) {
+	Warn(fmt.Sprintf("【%s】%s", t.prefix, msg), fields...)
 }

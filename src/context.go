@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Context Context
 type Context interface {
 	// 获取包
 	GetPacket() interface{}
@@ -16,6 +17,7 @@ type Context interface {
 	GetServerContext() *ServerContext
 }
 
+// DefaultContext DefaultContext
 type DefaultContext struct {
 	packetCtx PacketContext
 	client    Client
@@ -44,8 +46,7 @@ func (d *DefaultContext) GetPacket() interface{} {
 	return d.packetCtx.GetPacket()
 }
 
-
-// GetStatefulConn 当前请求的有状态连接
+// GetClient 获取客户端对象
 func (d *DefaultContext) GetClient() Client {
 	return d.client
 }
@@ -54,10 +55,10 @@ func (d *DefaultContext) GetClient() Client {
 func (d *DefaultContext) WritePacket(packet interface{}) {
 	packetBytes, err := d.pro.EncodePacket(packet)
 	if err != nil {
-		log.Warn("EncodePacket失败！",zap.Error(err))
+		log.Warn("EncodePacket失败！", zap.Error(err))
 	}
 	_, err = d.GetClient().Write(packetBytes)
 	if err != nil {
-		log.Warn("Write失败！",zap.Error(err))
+		log.Warn("Write失败！", zap.Error(err))
 	}
 }

@@ -10,83 +10,99 @@ import (
 	"time"
 )
 
-type TcpOptions struct {
+// TCPOptions 配置
+type TCPOptions struct {
 	Addr              string        // tcp连接地址
 	lg                log.Log       // 日志
 	handshake         HandshakeFnc  // 握手
 	HeartbeatInterval time.Duration //心跳间隔
-	router Router
-	protocol Protocol
-	createClientFnc CreateClientFnc // 创建客户端的方法
+	router            Router
+	protocol          Protocol
+	createClientFnc   CreateClientFnc // 创建客户端的方法
 }
 
-func NewTcpOptions() *TcpOptions {
-	return &TcpOptions{
+// NewTCPOptions 创建一个默认配置
+func NewTCPOptions() *TCPOptions {
+	return &TCPOptions{
 		Addr:              "0.0.0.0:6666",
 		HeartbeatInterval: time.Second * 30,
 	}
 }
 
-type TcpOption func(opt *TcpOptions)
+// TCPOption 配置项
+type TCPOption func(opt *TCPOptions)
 
-func TcpAddr(addr string) TcpOption {
-	return func(opt *TcpOptions) {
+// TCPAddr tcp连接地址
+func TCPAddr(addr string) TCPOption {
+	return func(opt *TCPOptions) {
 		opt.Addr = addr
 	}
 }
 
-func TcpProtocol(protocol Protocol) TcpOption {
-	return func(opt *TcpOptions) {
+// TCPProtocol 协议接口
+func TCPProtocol(protocol Protocol) TCPOption {
+	return func(opt *TCPOptions) {
 		opt.protocol = protocol
 	}
 }
 
-
-
-func TcpRouter(router Router) TcpOption {
-	return func(opt *TcpOptions) {
+// TCPRouter tcp路由
+func TCPRouter(router Router) TCPOption {
+	return func(opt *TCPOptions) {
 		opt.router = router
 	}
 }
 
-func TcpLog(lg log.Log) TcpOption {
-	return func(opt *TcpOptions) {
+// TCPLog 日志
+func TCPLog(lg log.Log) TCPOption {
+	return func(opt *TCPOptions) {
 		opt.lg = lg
 	}
 }
-func TcpHandshake(handshake HandshakeFnc) TcpOption {
-	return func(opt *TcpOptions) {
+
+// TCPHandshake 握手函数
+func TCPHandshake(handshake HandshakeFnc) TCPOption {
+	return func(opt *TCPOptions) {
 		opt.handshake = handshake
 	}
 }
 
-func TcpHeartbeatInterval(heartbeatInterval time.Duration) TcpOption {
-	return func(opt *TcpOptions) {
+// TCPHeartbeatInterval 心跳
+func TCPHeartbeatInterval(heartbeatInterval time.Duration) TCPOption {
+	return func(opt *TCPOptions) {
 		opt.HeartbeatInterval = heartbeatInterval
 	}
 }
 
-func TcpCreateClient(createClientFnc CreateClientFnc) TcpOption {
-	return func(opt *TcpOptions) {
+// TCPCreateClient 创建tcp客户端
+func TCPCreateClient(createClientFnc CreateClientFnc) TCPOption {
+	return func(opt *TCPOptions) {
 		opt.createClientFnc = createClientFnc
 	}
 }
 
+// NewContextFnc NewContextFnc
 type NewContextFnc func(packetCtx PacketContext, sContext *ServerContext, conn Conn, client Client) Context
-type CreateClientFnc func(clientId string,packet interface{},conn net.Conn,sCtx *ServerContext) (Client,error)
+
+// CreateClientFnc 创建客户端函数
+type CreateClientFnc func(clientId string, packet interface{}, conn net.Conn, sCtx *ServerContext) (Client, error)
+
+// ServerTCP ServerTCP
 type ServerTCP struct {
 	tcpListener net.Listener
 	ctx         *ServerContext
 	exitChan    chan int
 	waitGroup   WaitGroupWrapper
 	realAddr    string // 真实连接地址
-	opts        *TcpOptions
+	opts        *TCPOptions
 }
 
-type HandshakeFnc func(packet interface{}, conn net.Conn,ctx *ServerContext) (error,string)
+// HandshakeFnc 握手函数
+type HandshakeFnc func(packet interface{}, conn net.Conn, ctx *ServerContext) (string, error)
 
-func NewServerTCP(opts ...TcpOption) *ServerTCP {
-	options := NewTcpOptions()
+// NewServerTCP NewServerTCP
+func NewServerTCP(opts ...TCPOption) *ServerTCP {
+	options := NewTCPOptions()
 	if opts != nil {
 		for _, opt := range opts {
 			opt(options)
@@ -99,9 +115,10 @@ func NewServerTCP(opts ...TcpOption) *ServerTCP {
 		nLog = options.lg
 	}
 	options.lg = nLog
-	return &ServerTCP{opts: options,exitChan:make(chan int)}
+	return &ServerTCP{opts: options, exitChan: make(chan int)}
 }
 
+// Start 开始运行
 func (s *ServerTCP) Start(context *ServerContext) error {
 	s.ctx = context
 	var err error
@@ -115,14 +132,17 @@ func (s *ServerTCP) Start(context *ServerContext) error {
 	return nil
 }
 
-func (s *ServerTCP) GetProtocol() Protocol  {
+// GetProtocol 获取协议
+func (s *ServerTCP) GetProtocol() Protocol {
 	return s.opts.protocol
 }
 
-func (s *ServerTCP) GetRealAddr() string  {
+// GetRealAddr 获取真实的tcp的地址
+func (s *ServerTCP) GetRealAddr() string {
 	return s.realAddr
 }
 
+// Stop 停止
 func (s *ServerTCP) Stop() error {
 	err := s.tcpListener.Close()
 	if err != nil {
@@ -168,44 +188,48 @@ func (s *ServerTCP) handleConn(cn net.Conn) {
 		log.Error("解码连接消息失败！", zap.Error(err))
 		return
 	}
-	var clientId string
-	if s.opts.handshake!=nil {
-		err,clientId = s.opts.handshake(packet, cn,s.ctx)
-		if err!=nil {
-			s.Debug("握手失败！",zap.Error(err))
+	var clientID string
+	if s.opts.handshake != nil {
+		clientID, err = s.opts.handshake(packet, cn, s.ctx)
+		if err != nil {
+			s.Debug("握手失败！", zap.Error(err))
 			cn.Close()
 			return
 		}
 	}
 	pCtx := NewDefaultPacketContext(packet)
 	context := NewDefaultContext(pCtx, s.ctx, s.GetProtocol(), nil)
-	if s.opts.createClientFnc!=nil {
-		context.client,err = s.opts.createClientFnc(clientId,packet,cn,s.ctx)
-		if err!=nil {
-			s.Error("客户端创建失败！",zap.Error(err))
+	if s.opts.createClientFnc != nil {
+		context.client, err = s.opts.createClientFnc(clientID, packet, cn, s.ctx)
+		if err != nil {
+			s.Error("客户端创建失败！", zap.Error(err))
 			return
 		}
-	}else {
+	} else {
 		// 创建一个tcp客户端
-		context.client = NewTCPClient(clientId,cn,s.ctx)
+		context.client = NewTCPClient(clientID, cn, s.ctx)
 	}
 
 	s.ctx.Accept(context)
 }
 
+// GetRouter 获取路由
 func (s *ServerTCP) GetRouter() Router {
 
 	return s.opts.router
 }
 
+// Debug Debug
 func (s *ServerTCP) Debug(msg string, fields ...zap.Field) {
 	s.opts.lg.Debug(msg, fields...)
 }
 
+// Info Info
 func (s *ServerTCP) Info(msg string, fields ...zap.Field) {
 	s.opts.lg.Info(msg, fields...)
 }
 
+// Error Error
 func (s *ServerTCP) Error(msg string, fields ...zap.Field) {
 	s.opts.lg.Error(msg, fields...)
 }

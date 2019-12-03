@@ -6,10 +6,12 @@ import (
 	"go.uber.org/zap"
 )
 
+// Handler Handler
 type Handler func(ctx Context)
 
+// TGO TGO
 type TGO struct {
-	opts             Options // TGO启动参数
+	opts             Options  // TGO启动参数
 	servers          []Server // server集合
 	AcceptChan       chan Context
 	runExitChan      chan int
@@ -17,10 +19,13 @@ type TGO struct {
 	waitGroup        WaitGroupWrapper
 	handlerWaitGroup WaitGroupWrapper
 }
+
+// GetDefaultOptions 默认配置
 func GetDefaultOptions() Options {
-	return Options{
-	}
+	return Options{}
 }
+
+// New New
 func New(opts ...Option) *TGO {
 	defaultOpts := GetDefaultOptions()
 	for _, opt := range opts {
@@ -30,7 +35,7 @@ func New(opts ...Option) *TGO {
 			}
 		}
 	}
-	return &TGO{opts: defaultOpts, servers: make([]Server, 0), runExitChan: make(chan int, 0), AcceptChan: make(chan Context, 1024),}
+	return &TGO{opts: defaultOpts, servers: make([]Server, 0), runExitChan: make(chan int, 0), AcceptChan: make(chan Context, 1024)}
 }
 
 // Start 开始TGO
@@ -44,6 +49,7 @@ func (t *TGO) Start() {
 	t.waitGroup.Wrap(t.msgLoop)
 }
 
+// Run Run
 func (t *TGO) Run() {
 	t.Start()
 
@@ -67,6 +73,7 @@ func (t *TGO) UseServer(server Server) {
 	t.servers = append(t.servers, server)
 }
 
+// ClearServers 清空server
 func (t *TGO) ClearServers() {
 	t.servers = make([]Server, 0)
 }
@@ -75,7 +82,6 @@ func (t *TGO) ClearServers() {
 //func (t *TGO) UseProtocol(p Protocol) {
 //	t.pro = p
 //}
-
 
 // UseHandler 处理者
 func (t *TGO) UseHandler(handler Handler) {
@@ -87,7 +93,6 @@ func (t *TGO) UseHandler(handler Handler) {
 //	return t.pro
 //}
 
-
 func (t *TGO) serverContext(svr Server) *ServerContext {
 	return NewServerContext(t, svr)
 }
@@ -96,7 +101,7 @@ func (t *TGO) msgLoop() {
 	for {
 		select {
 		case context := <-t.AcceptChan:
-			if context!=nil {
+			if context != nil {
 				if t.handler != nil {
 					t.handlerWaitGroup.Wrap(func() {
 						t.handler(context)

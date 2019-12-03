@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/tgo-team/tgo/src"
 	"net"
+
+	tgo "github.com/tgo-team/tgo/src"
 )
 
 func main() {
@@ -10,9 +11,9 @@ func main() {
 	// 创建TGO
 	tg := tgo.New()
 	// 指定server
-	tg.UseServer(tgo.NewServerTCP(tgo.TcpHandshake(func(packet interface{}, conn net.Conn, ctx *tgo.ServerContext) (e error, s string) {
-			return nil,"1"
-	}), tgo.TcpAddr("0.0.0.0:0")))
+	tg.UseServer(tgo.NewServerTCP(tgo.TCPHandshake(func(packet interface{}, conn net.Conn, ctx *tgo.ServerContext) (s string, e error) {
+		return "1", nil
+	}), tgo.TCPAddr("0.0.0.0:0")))
 	// 指定包处理者
 	tg.UseHandler(func(ctx tgo.Context) {
 

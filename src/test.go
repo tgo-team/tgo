@@ -7,7 +7,8 @@ import (
 	"os"
 )
 
-func NewTestTGO() (*TGO,net.Addr) {
+// NewTestTGO NewTestTGO
+func NewTestTGO() (*TGO, net.Addr) {
 	fileName := "test.socket"
 	os.Remove(fileName)
 	// 创建TGO
@@ -15,24 +16,24 @@ func NewTestTGO() (*TGO,net.Addr) {
 	s := NewServerUnix(fileName)
 	// 指定server
 	tg.UseServer(s)
-	return tg,s.addr
+	return tg, s.addr
 }
 
-
+// TestPro TestPro
 type TestPro struct {
-
 }
 
-// 解码消息
-func (t *TestPro) DecodePacket(conn io.Reader) (interface{},error) {
-	 testBytes := make([]byte,1024)
-	cn,err := bufio.NewReader(conn).Read(testBytes)
-	if err!=nil {
-		return nil,err
+// DecodePacket 解码消息
+func (t *TestPro) DecodePacket(conn io.Reader) (interface{}, error) {
+	testBytes := make([]byte, 1024)
+	cn, err := bufio.NewReader(conn).Read(testBytes)
+	if err != nil {
+		return nil, err
 	}
-	return string(testBytes[:cn]),nil
+	return string(testBytes[:cn]), nil
 }
-// 编码消息
-func (t *TestPro) EncodePacket(packet interface{}) ([]byte,error) {
-	return []byte(packet.(string)),nil
+
+// EncodePacket 编码消息
+func (t *TestPro) EncodePacket(packet interface{}) ([]byte, error) {
+	return []byte(packet.(string)), nil
 }

@@ -2,9 +2,10 @@ package tgo
 
 import "io"
 
+// Protocol Protocol
 type Protocol interface {
-	// 解码消息
-	DecodePacket(conn io.Reader) (interface{},error)
-	// 编码消息
-	EncodePacket(packet interface{}) ([]byte,error)
+	// DecodePacket 解码消息
+	DecodePacket(conn io.Reader) (interface{}, error)
+	// EncodePacket 编码消息
+	EncodePacket(packet interface{}) ([]byte, error)
 }

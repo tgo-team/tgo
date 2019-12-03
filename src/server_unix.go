@@ -7,36 +7,39 @@ import (
 	"strings"
 )
 
+// ServerUnix ServerUnix
 type ServerUnix struct {
-	listener *net.UnixListener
-	ctx         *ServerContext
-	exitChan         chan int
-	waitGroup        WaitGroupWrapper
-	fileName string
-	addr *net.UnixAddr
+	listener  *net.UnixListener
+	ctx       *ServerContext
+	exitChan  chan int
+	waitGroup WaitGroupWrapper
+	fileName  string
+	addr      *net.UnixAddr
 }
 
+// NewServerUnix NewServerUnix
 func NewServerUnix(fileName string) *ServerUnix {
 	s := &ServerUnix{}
 	var err error
 	s.addr, err = net.ResolveUnixAddr("unix", fileName)
-	if err!=nil {
+	if err != nil {
 		panic(err)
 	}
 	s.listener, err = net.ListenUnix("unix", s.addr)
-	if err!=nil {
+	if err != nil {
 		panic(err)
 	}
 	return s
 }
 
-
+// Start Start
 func (s *ServerUnix) Start(context *ServerContext) error {
 	s.ctx = context
 	s.waitGroup.Wrap(s.connLoop)
 	return nil
 }
 
+// Stop Stop
 func (s *ServerUnix) Stop() error {
 	err := s.listener.Close()
 	s.waitGroup.Wait()
@@ -72,22 +75,23 @@ exit:
 	fmt.Println("退出Server")
 }
 
-func (s *ServerUnix) handleConn(cn net.Conn)  {
+func (s *ServerUnix) handleConn(cn net.Conn) {
 
-	packet,err := s.GetProtocol().DecodePacket(cn)
-	if err!=nil {
-		fmt.Println("解码消息失败！-> ",err.Error())
+	packet, err := s.GetProtocol().DecodePacket(cn)
+	if err != nil {
+		fmt.Println("解码消息失败！-> ", err.Error())
 		return
 	}
 	pCtx := NewDefaultPacketContext(packet)
-	s.ctx.Accept(NewDefaultContext(pCtx,s.ctx,s.GetProtocol(),nil))
+	s.ctx.Accept(NewDefaultContext(pCtx, s.ctx, s.GetProtocol(), nil))
 }
 
-
+// GetRouter GetRouter
 func (s *ServerUnix) GetRouter() Router {
 	return nil
 }
 
+// GetProtocol GetProtocol
 func (s *ServerUnix) GetProtocol() Protocol {
 
 	return nil

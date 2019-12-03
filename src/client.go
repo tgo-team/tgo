@@ -7,23 +7,24 @@ import (
 	"time"
 )
 
+// TCPClient TCPClient
 type TCPClient struct {
-	clientId string
+	clientID string
 	net.Conn
 	sCtx *ServerContext
 }
 
-func NewTCPClient(clientId string,conn net.Conn,sCtx *ServerContext) *TCPClient  {
+// NewTCPClient NewTCPClient
+func NewTCPClient(clientID string, conn net.Conn, sCtx *ServerContext) *TCPClient {
 	c := &TCPClient{}
-	c.clientId = clientId
+	c.clientID = clientID
 	c.Conn = conn
 	c.sCtx = sCtx
 	go c.msgLoop()
 	return c
 }
 
-
-func (c *TCPClient) msgLoop()  {
+func (c *TCPClient) msgLoop() {
 	for {
 		packet, err := c.sCtx.GetProtocol().DecodePacket(c)
 		if err != nil {
@@ -36,7 +37,6 @@ func (c *TCPClient) msgLoop()  {
 	}
 }
 
-
 func (c *TCPClient) Read(b []byte) (n int, err error) {
 	return c.Conn.Read(b)
 }
@@ -45,21 +45,27 @@ func (c *TCPClient) Write(b []byte) (n int, err error) {
 	return c.Conn.Write(b)
 }
 
-func (c *TCPClient) SetDeadline(t time.Time)  {
+// SetDeadline 客户端死亡线
+func (c *TCPClient) SetDeadline(t time.Time) {
 	c.Conn.SetDeadline(t)
 }
-func (c *TCPClient) GetId() string  {
-	return c.clientId
-}
-func (c *TCPClient) GetUid() string  {
-	return c.clientId
+
+// GetID 客户端唯一ID
+func (c *TCPClient) GetID() string {
+	return c.clientID
 }
 
-func (c *TCPClient) Close() error  {
+// GetUID 客户端的uid
+func (c *TCPClient) GetUID() string {
+	return c.clientID
+}
+
+// Close 关闭客户端
+func (c *TCPClient) Close() error {
 	return c.Conn.Close()
 }
 
-func (c *TCPClient)  KeepAlive()  {
+// KeepAlive 客户端保活
+func (c *TCPClient) KeepAlive() {
 
 }
-

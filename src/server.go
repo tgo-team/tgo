@@ -1,5 +1,6 @@
 package tgo
 
+// Server Server
 type Server interface {
 	Start(context *ServerContext) error
 	Stop() error
@@ -7,19 +8,23 @@ type Server interface {
 	GetProtocol() Protocol
 }
 
+// ServerContext ServerContext
 type ServerContext struct {
-	T *TGO
+	T   *TGO
 	svr Server
 }
 
-func NewServerContext(tg *TGO,svr Server) *ServerContext {
-	return &ServerContext{T: tg,svr:svr}
+// NewServerContext NewServerContext
+func NewServerContext(tg *TGO, svr Server) *ServerContext {
+	return &ServerContext{T: tg, svr: svr}
 }
 
-func (sc *ServerContext) Accept(ctx Context)  {
+// Accept 接收请求
+func (sc *ServerContext) Accept(ctx Context) {
 	sc.T.AcceptChan <- ctx
 }
 
+// GetProtocol 获取协议
 func (sc *ServerContext) GetProtocol() Protocol {
 
 	return sc.svr.GetProtocol()
